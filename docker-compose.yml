@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   ghost:
     image: ghost:5.101-alpine
@@ -21,11 +19,11 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:2368/ghost/api/v4/admin/site/ || exit 1"]
-      interval: 30s
+      test: ["CMD-SHELL", "wget -qO- http://localhost:2368/ || exit 1"]
+      interval: 15s
       timeout: 10s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 90s
     networks:
       - ghost_net
 
@@ -40,11 +38,11 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 30s
     networks:
       - ghost_net
 
