@@ -19,11 +19,11 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:2368/ || exit 1"]
+      test: ["CMD-SHELL", "curl -fsSL http://localhost:2368/ -o /dev/null || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
-      start_period: 90s
+      start_period: 120s
     networks:
       - ghost_net
 
@@ -42,7 +42,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 120s
     networks:
       - ghost_net
 
