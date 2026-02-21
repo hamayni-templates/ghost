@@ -1,71 +1,57 @@
-version: '3.8'
+version: "3.8"
 
 services:
   ghost:
     image: ghost:5.101-alpine
-    container_name: ghost
     restart: unless-stopped
-    depends_on:
-      - mysql
-    environment:
-      - NODE_ENV=production
-      - database__client=mysql
-      - database__connection__host=${MYSQL_HOST:-mysql}
-      - database__connection__user=${MYSQL_USER:-ghost}
-      - database__connection__password=${MYSQL_PASSWORD:-ghostpassword}
-      - database__connection__database=${MYSQL_DATABASE:-ghost}
-      - url=${GHOST_URL:-http://localhost:8080}
-      - mail__transport=${MAIL_TRANSPORT:-SMTP}
-      - mail__options__host=${MAIL_HOST:-smtp.example.com}
-      - mail__options__port=${MAIL_PORT:-587}
-      - mail__options__auth__user=${MAIL_USER:-user}
-      - mail__options__auth__pass=${MAIL_PASSWORD:-password}
     ports:
-      - "8080:2368"
+      - "2368:2368"
+    environment:
+      url: ${GHOST_URL:-http://localhost:2368}
+      database__client: mysql
+      database__connection__host: db
+      database__connection__port: "3306"
+      database__connection__user: ${MYSQL_USER:-ghost}
+      database__connection__password: ${MYSQL_PASSWORD}
+      database__connection__database: ${MYSQL_DATABASE:-ghost}
+      NODE_ENV: production
     volumes:
       - ghost_content:/var/lib/ghost/content
-      - ghost_images:/var/lib/ghost/content/images
-    networks:
-      - ghost_network
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:2368/ghost/api/admin/site', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:2368/ghost/api/v4/admin/site/ || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 30s
+    networks:
+      - ghost_net
 
-  mysql:
+  db:
     image: mysql:8.4
-    container_name: ghost_mysql
     restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-ghost}
-      - MYSQL_USER=${MYSQL_USER:-ghost}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-ghostpassword}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ghost}
+      MYSQL_USER: ${MYSQL_USER:-ghost}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - mysql_data:/var/lib/mysql
-      - mysql_config:/etc/mysql/conf.d
-    networks:
-      - ghost_network
+      - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - ghost_net
 
 volumes:
   ghost_content:
-    name: ghost_content
-  ghost_images:
-    name: ghost_images
-  mysql_data:
-    name: ghost_mysql_data
-  mysql_config:
-    name: ghost_mysql_config
+  db_data:
 
 networks:
-  ghost_network:
-    name: ghost_network
+  ghost_net:
     driver: bridge
