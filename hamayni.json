@@ -1,0 +1,108 @@
+{
+  "contract_version": "1.1.0",
+  "template_id": "ghost",
+  "template_version": "1.0.0",
+  "name": "Ghost",
+  "description": "Plateforme de publication professionnelle open source",
+  "artifact_type": "docker_stack",
+  "source_ref": {
+    "type": "tag",
+    "value": "v1.0.0"
+  },
+  "prerequisites": [
+    "docker",
+    "docker-compose"
+  ],
+  "runtime": {
+    "kind": "docker-compose",
+    "compose_file": "docker-compose.yml",
+    "ports": {
+      "http": 8080
+    }
+  },
+  "env": [
+    {
+      "name": "MYSQL_ROOT_PASSWORD",
+      "required": true,
+      "description": "Mot de passe root MySQL",
+      "default": "rootpassword"
+    },
+    {
+      "name": "MYSQL_DATABASE",
+      "required": true,
+      "description": "Nom de la base de données Ghost",
+      "default": "ghost"
+    },
+    {
+      "name": "MYSQL_USER",
+      "required": true,
+      "description": "Utilisateur MySQL pour Ghost",
+      "default": "ghost"
+    },
+    {
+      "name": "MYSQL_PASSWORD",
+      "required": true,
+      "description": "Mot de passe MySQL pour Ghost",
+      "default": "ghostpassword"
+    },
+    {
+      "name": "GHOST_URL",
+      "required": true,
+      "description": "URL publique de votre instance Ghost",
+      "default": "http://localhost:8080"
+    },
+    {
+      "name": "MAIL_TRANSPORT",
+      "required": false,
+      "description": "Transport email (SMTP, Mailgun, etc.)",
+      "default": "SMTP"
+    },
+    {
+      "name": "MAIL_HOST",
+      "required": false,
+      "description": "Serveur SMTP",
+      "default": "smtp.example.com"
+    },
+    {
+      "name": "MAIL_PORT",
+      "required": false,
+      "description": "Port SMTP",
+      "default": "587"
+    },
+    {
+      "name": "MAIL_USER",
+      "required": false,
+      "description": "Utilisateur SMTP",
+      "default": "user"
+    },
+    {
+      "name": "MAIL_PASSWORD",
+      "required": false,
+      "description": "Mot de passe SMTP",
+      "default": "password"
+    }
+  ],
+  "health": {
+    "checks": [
+      {
+        "path": "http://localhost:8080/ghost/api/admin/site",
+        "expected_status": 200,
+        "timeout_s": 60
+      }
+    ],
+    "success_policy": "all"
+  },
+  "policies": {
+    "strict_mode": true,
+    "ban_latest": true,
+    "infra_requires_tag_or_commit": false
+  },
+  "postInstall": [
+    {
+      "type": "shell",
+      "cmd": "echo 'Ghost est prêt ! Accédez à http://localhost:8080/ghost pour terminer la configuration.'"
+    }
+  ],
+  "minAgentVersion": "2.5.0",
+  "tested": true
+}
