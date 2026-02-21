@@ -3,7 +3,7 @@
   "template_id": "ghost",
   "template_version": "1.1.0",
   "name": "Ghost",
-  "description": "Ghost — Plateforme de publication moderne et performante. Inclut MySQL 8.4, volumes persistants et health checks.",
+  "description": "Ghost â Plateforme de publication moderne et performante. Inclut MySQL 8.4, volumes persistants et health checks.",
   "artifact_type": "docker_stack",
   "source_ref": {
     "type": "tag",
@@ -44,7 +44,7 @@
     {
       "name": "MYSQL_DATABASE",
       "required": false,
-      "description": "Nom de la base de données",
+      "description": "Nom de la base de donnÃ©es",
       "default": "ghost"
     },
     {
@@ -57,9 +57,10 @@
   "health": {
     "checks": [
       {
-        "path": "http://localhost:2368/",
+        "path": "http://localhost:2368/ghost/api/admin/site/",
         "expected_status": 200,
-        "timeout_s": 120
+        "timeout_s": 120,
+        "follow_redirects": true
       }
     ],
     "success_policy": "all"
