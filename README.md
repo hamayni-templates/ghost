@@ -1,101 +1,37 @@
-# Ghost - Plateforme de publication professionnelle
+# Ghost — Hamayni Certified Template
 
-Ghost est une plateforme de publication open source moderne, conçue pour les créateurs de contenu, les blogueurs et les médias.
-
-## Fonctionnalités principales
-
-- **Newsletter intégré** : Gestion complète des newsletters et abonnés
-- **Membres & abonnements** : Système de membres avec abonnements payants
-- **API headless** : API RESTful pour une intégration flexible
-- **Éditeur moderne** : Éditeur markdown avec aperçu en temps réel
-- **Thèmes personnalisables** : Thèmes personnalisables avec Handlebars
+## Description
+Ghost est une plateforme de publication moderne, rapide et élégante. Ce template inclut Ghost 5.101 + MySQL 8.4, prêt à déployer via Hamayni.
 
 ## Prérequis
-
-- Docker
-- Docker Compose
-
-## Installation
-
-1. Clonez ce template
-2. Copiez `.env.example` vers `.env` et configurez les variables
-3. Lancez la stack :
-   ```bash
-   docker-compose up -d
-   ```
-4. Accédez à `http://localhost:8080/ghost` pour terminer la configuration
+- Docker & Docker Compose
 
 ## Variables d'environnement
+| Variable | Requis | Description | Défaut |
+|----------|--------|-------------|--------|
+| GHOST_URL | **Oui** | URL publique du blog | — |
+| MYSQL_PASSWORD | **Oui** | Mot de passe MySQL | — |
+| MYSQL_ROOT_PASSWORD | **Oui** | Mot de passe root MySQL | — |
+| MYSQL_DATABASE | Non | Nom de la base | ghost |
+| MYSQL_USER | Non | Utilisateur MySQL | ghost |
 
-| Variable | Description | Valeur par défaut | Requis |
-|----------|-------------|-------------------|--------|
-| MYSQL_ROOT_PASSWORD | Mot de passe root MySQL | rootpassword | Oui |
-| MYSQL_DATABASE | Nom de la base de données | ghost | Oui |
-| MYSQL_USER | Utilisateur MySQL | ghost | Oui |
-| MYSQL_PASSWORD | Mot de passe MySQL | ghostpassword | Oui |
-| GHOST_URL | URL publique | http://localhost:8080 | Oui |
-| MAIL_TRANSPORT | Transport email | SMTP | Non |
-| MAIL_HOST | Serveur SMTP | smtp.example.com | Non |
-| MAIL_PORT | Port SMTP | 587 | Non |
-| MAIL_USER | Utilisateur SMTP | user | Non |
-| MAIL_PASSWORD | Mot de passe SMTP | password | Non |
-
-## Volumes persistants
-
-- `ghost_content` : Contenu de Ghost (articles, pages, paramètres)
-- `ghost_images` : Images téléchargées
-- `ghost_mysql_data` : Données MySQL
-- `ghost_mysql_config` : Configuration MySQL
-
-## Ports
-
-- **8080** : Interface web de Ghost
-
-## Maintenance
-
-### Sauvegarde
-
+## Déploiement
 ```bash
-# Sauvegarde des volumes
-docker run --rm -v ghost_content:/data -v $(pwd):/backup alpine tar czf /backup/ghost_content_backup.tar.gz -C /data .
-docker run --rm -v ghost_mysql_data:/data -v $(pwd):/backup alpine tar czf /backup/mysql_data_backup.tar.gz -C /data .
+docker-compose up -d
 ```
 
-### Mise à jour
+Ghost sera accessible sur le port **2368**.
+L'interface d'administration est disponible sur `/ghost/`.
 
-1. Arrêtez les conteneurs : `docker-compose down`
-2. Mettez à jour l'image dans `docker-compose.yml`
-3. Relancez : `docker-compose up -d`
+## Health Check
+- URL: `http://localhost:2368/ghost/api/v4/admin/site/`
+- Timeout: 60s
 
-## Dépannage
+## Architecture
+- **ghost**: Ghost CMS (Node.js) sur Alpine Linux
+- **db**: MySQL 8.4 avec health check intégré
+- **Réseau**: Réseau bridge isolé (`ghost_net`)
+- **Volumes**: Données persistantes pour le contenu et la BDD
 
-### Vérifier l'état des services
-
-```bash
-docker-compose ps
-docker-compose logs ghost
-docker-compose logs mysql
-```
-
-### Accéder à la base de données
-
-```bash
-docker exec -it ghost_mysql mysql -u ghost -p ghost
-```
-
-## Sécurité
-
-- Changez tous les mots de passe par défaut
-- Utilisez HTTPS en production
-- Configurez correctement les paramètres SMTP
-- Limitez l'accès aux ports exposés
-
-## Documentation
-
-- [Documentation officielle Ghost](https://ghost.org/docs/)
-- [API Ghost](https://ghost.org/docs/api/)
-- [Thèmes Ghost](https://ghost.org/docs/themes/)
-
-## Support
-
-Pour toute question, consultez la [documentation officielle](https://ghost.org/docs/) ou les [forums de la communauté](https://forum.ghost.org/).
+## Licence
+MIT — Ghost Foundation
