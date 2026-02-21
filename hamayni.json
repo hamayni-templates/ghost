@@ -1,13 +1,13 @@
 {
   "contract_version": "1.1.0",
   "template_id": "ghost",
-  "template_version": "1.0.0",
+  "template_version": "1.1.0",
   "name": "Ghost",
   "description": "Ghost — Plateforme de publication moderne et performante. Inclut MySQL 8.4, volumes persistants et health checks.",
   "artifact_type": "docker_stack",
   "source_ref": {
     "type": "tag",
-    "value": "v1.0.0"
+    "value": "v1.1.0"
   },
   "prerequisites": [
     "docker",
@@ -57,9 +57,9 @@
   "health": {
     "checks": [
       {
-        "path": "http://localhost:2368/ghost/api/v4/admin/site/",
+        "path": "http://localhost:2368/",
         "expected_status": 200,
-        "timeout_s": 60
+        "timeout_s": 120
       }
     ],
     "success_policy": "all"
@@ -72,11 +72,6 @@
         "description": "Ghost CMS"
       }
     ]
-  },
-  "policies": {
-    "strict_mode": true,
-    "ban_latest": true,
-    "infra_requires_tag_or_commit": true
   },
   "credentials_spec": [
     {
@@ -102,6 +97,11 @@
       "hidden": true
     }
   ],
+  "policies": {
+    "strict_mode": true,
+    "ban_latest": true,
+    "infra_requires_tag_or_commit": true
+  },
   "postInstall": [
     {
       "type": "shell",
