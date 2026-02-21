@@ -3,7 +3,7 @@
   "template_id": "ghost",
   "template_version": "1.0.0",
   "name": "Ghost",
-  "description": "Plateforme de publication professionnelle open source",
+  "description": "Ghost — Plateforme de publication moderne et performante. Inclut MySQL 8.4, volumes persistants et health checks.",
   "artifact_type": "docker_stack",
   "source_ref": {
     "type": "tag",
@@ -16,91 +16,97 @@
   "runtime": {
     "kind": "docker-compose",
     "compose_file": "docker-compose.yml",
+    "profiles_supported": false,
+    "services": [
+      "ghost",
+      "db"
+    ],
     "ports": {
-      "http": 8080
+      "http": 2368
     }
   },
   "env": [
     {
-      "name": "MYSQL_ROOT_PASSWORD",
+      "name": "GHOST_URL",
       "required": true,
-      "description": "Mot de passe root MySQL",
-      "default": "rootpassword"
-    },
-    {
-      "name": "MYSQL_DATABASE",
-      "required": true,
-      "description": "Nom de la base de données Ghost",
-      "default": "ghost"
-    },
-    {
-      "name": "MYSQL_USER",
-      "required": true,
-      "description": "Utilisateur MySQL pour Ghost",
-      "default": "ghost"
+      "description": "URL publique du blog (ex: https://blog.example.com)"
     },
     {
       "name": "MYSQL_PASSWORD",
       "required": true,
-      "description": "Mot de passe MySQL pour Ghost",
-      "default": "ghostpassword"
+      "description": "Mot de passe MySQL pour l'utilisateur Ghost"
     },
     {
-      "name": "GHOST_URL",
+      "name": "MYSQL_ROOT_PASSWORD",
       "required": true,
-      "description": "URL publique de votre instance Ghost",
-      "default": "http://localhost:8080"
+      "description": "Mot de passe root MySQL"
     },
     {
-      "name": "MAIL_TRANSPORT",
+      "name": "MYSQL_DATABASE",
       "required": false,
-      "description": "Transport email (SMTP, Mailgun, etc.)",
-      "default": "SMTP"
+      "description": "Nom de la base de données",
+      "default": "ghost"
     },
     {
-      "name": "MAIL_HOST",
+      "name": "MYSQL_USER",
       "required": false,
-      "description": "Serveur SMTP",
-      "default": "smtp.example.com"
-    },
-    {
-      "name": "MAIL_PORT",
-      "required": false,
-      "description": "Port SMTP",
-      "default": "587"
-    },
-    {
-      "name": "MAIL_USER",
-      "required": false,
-      "description": "Utilisateur SMTP",
-      "default": "user"
-    },
-    {
-      "name": "MAIL_PASSWORD",
-      "required": false,
-      "description": "Mot de passe SMTP",
-      "default": "password"
+      "description": "Utilisateur MySQL",
+      "default": "ghost"
     }
   ],
   "health": {
     "checks": [
       {
-        "path": "http://localhost:8080/ghost/api/admin/site",
+        "path": "http://localhost:2368/ghost/api/v4/admin/site/",
         "expected_status": 200,
         "timeout_s": 60
       }
     ],
     "success_policy": "all"
   },
+  "nginx": {
+    "upstreams": [
+      {
+        "path": "/",
+        "target": "http://127.0.0.1:2368/",
+        "description": "Ghost CMS"
+      }
+    ]
+  },
   "policies": {
     "strict_mode": true,
     "ban_latest": true,
-    "infra_requires_tag_or_commit": false
+    "infra_requires_tag_or_commit": true
   },
+  "credentials_spec": [
+    {
+      "key": "BLOG_URL",
+      "label": "URL du blog",
+      "computed": "https://${DOMAIN}/"
+    },
+    {
+      "key": "ADMIN_URL",
+      "label": "URL d'administration",
+      "computed": "https://${DOMAIN}/ghost/"
+    },
+    {
+      "key": "MYSQL_PASSWORD",
+      "label": "Mot de passe MySQL",
+      "from_env": "MYSQL_PASSWORD",
+      "hidden": true
+    },
+    {
+      "key": "MYSQL_ROOT_PASSWORD",
+      "label": "Mot de passe root",
+      "from_env": "MYSQL_ROOT_PASSWORD",
+      "hidden": true
+    }
+  ],
   "postInstall": [
     {
       "type": "shell",
-      "cmd": "echo 'Ghost est prêt ! Accédez à http://localhost:8080/ghost pour terminer la configuration.'"
+      "cmd": "echo 'Ghost is ready'",
+      "timeout_s": 10
     }
   ],
   "minAgentVersion": "2.5.0",
