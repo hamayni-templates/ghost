@@ -1,115 +1,64 @@
 {
   "contract_version": "1.1.0",
   "template_id": "ghost",
-  "template_version": "1.1.0",
+  "template_version": "1.2.0",
   "name": "Ghost",
-  "description": "Ghost â Plateforme de publication moderne et performante. Inclut MySQL 8.4, volumes persistants et health checks.",
-  "artifact_type": "docker_stack",
-  "source_ref": {
-    "type": "tag",
-    "value": "v1.1.0"
+  "description": "Ghost — Plateforme de publication moderne et performante. Inclut MySQL 8.4, volumes persistants et health checks.",
+  "minAgentVersion": "2.15.0",
+
+  "artifact": {
+    "kind": "docker-compose",
+    "compose_file": "docker-compose.yml"
   },
-  "prerequisites": [
-    "docker",
-    "docker-compose"
-  ],
+
   "runtime": {
     "kind": "docker-compose",
     "compose_file": "docker-compose.yml",
-    "profiles_supported": false,
-    "services": [
-      "ghost",
-      "db"
-    ],
-    "ports": {
-      "http": 2368
-    }
+    "ports": { "http": 2368 },
+    "services": ["ghost", "db"],
+    "profiles_supported": false
   },
-  "env": [
-    {
-      "name": "GHOST_URL",
-      "required": true,
-      "description": "URL publique du blog (ex: https://blog.example.com)"
-    },
-    {
-      "name": "MYSQL_PASSWORD",
-      "required": true,
-      "description": "Mot de passe MySQL pour l'utilisateur Ghost"
-    },
-    {
-      "name": "MYSQL_ROOT_PASSWORD",
-      "required": true,
-      "description": "Mot de passe root MySQL"
-    },
-    {
-      "name": "MYSQL_DATABASE",
-      "required": false,
-      "description": "Nom de la base de donnÃ©es",
-      "default": "ghost"
-    },
-    {
-      "name": "MYSQL_USER",
-      "required": false,
-      "description": "Utilisateur MySQL",
-      "default": "ghost"
-    }
+
+  "env_vars": [
+    { "name": "GHOST_URL", "description": "URL publique du blog (ex: https://blog.example.com)", "required": true },
+    { "name": "MYSQL_PASSWORD", "description": "Mot de passe MySQL pour l'utilisateur Ghost", "required": true, "secret": true },
+    { "name": "MYSQL_ROOT_PASSWORD", "description": "Mot de passe root MySQL", "required": true, "secret": true },
+    { "name": "MYSQL_DATABASE", "description": "Nom de la base de données", "required": false, "default": "ghost" },
+    { "name": "MYSQL_USER", "description": "Utilisateur MySQL", "required": false, "default": "ghost" }
   ],
+
+  "prerequisites": ["docker", "docker-compose"],
+
+  "nginx": {
+    "upstreams": [
+      { "path": "/", "target": "http://127.0.0.1:2368/", "description": "Ghost CMS" }
+    ]
+  },
+
   "health": {
     "checks": [
-      {
-        "path": "http://localhost:2368/ghost/api/admin/site/",
-        "expected_status": 200,
-        "timeout_s": 120,
-        "follow_redirects": true
-      }
+      { "path": "http://localhost:2368/", "expected_status": 200, "timeout_s": 120 }
     ],
     "success_policy": "all"
   },
-  "nginx": {
-    "upstreams": [
-      {
-        "path": "/",
-        "target": "http://127.0.0.1:2368/",
-        "description": "Ghost CMS"
-      }
-    ]
-  },
+
   "credentials_spec": [
-    {
-      "key": "BLOG_URL",
-      "label": "URL du blog",
-      "computed": "https://${DOMAIN}/"
-    },
-    {
-      "key": "ADMIN_URL",
-      "label": "URL d'administration",
-      "computed": "https://${DOMAIN}/ghost/"
-    },
-    {
-      "key": "MYSQL_PASSWORD",
-      "label": "Mot de passe MySQL",
-      "from_env": "MYSQL_PASSWORD",
-      "hidden": true
-    },
-    {
-      "key": "MYSQL_ROOT_PASSWORD",
-      "label": "Mot de passe root",
-      "from_env": "MYSQL_ROOT_PASSWORD",
-      "hidden": true
-    }
+    { "key": "BLOG_URL", "label": "URL du blog", "computed": "https://${DOMAIN}/" },
+    { "key": "ADMIN_URL", "label": "URL d'administration", "computed": "https://${DOMAIN}/ghost/" },
+    { "key": "MYSQL_PASSWORD", "label": "Mot de passe MySQL", "from_env": "MYSQL_PASSWORD", "hidden": true },
+    { "key": "MYSQL_ROOT_PASSWORD", "label": "Mot de passe root", "from_env": "MYSQL_ROOT_PASSWORD", "hidden": true }
   ],
+
   "policies": {
     "strict_mode": true,
     "ban_latest": true,
     "infra_requires_tag_or_commit": true
   },
+
   "postInstall": [
-    {
-      "type": "shell",
-      "cmd": "echo 'Ghost is ready'",
-      "timeout_s": 10
-    }
+    { "type": "shell", "cmd": "echo 'Ghost is ready'", "timeout_s": 10 }
   ],
-  "minAgentVersion": "2.5.0",
+
+  "source_ref": { "type": "tag", "value": "v1.2.0" },
   "tested": true
 }
